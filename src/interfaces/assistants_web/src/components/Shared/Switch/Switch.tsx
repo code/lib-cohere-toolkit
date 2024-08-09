@@ -1,16 +1,24 @@
 'use client';
 
+import { Placement } from '@floating-ui/react';
 import { Field, Switch as HUSwitch, Label } from '@headlessui/react';
 
-import { Text } from '@/components/Shared';
+import { Text, Tooltip } from '@/components/Shared';
+import { COHERE_BRANDED_COLORS } from '@/constants';
 import { cn } from '@/utils';
 
 type Props = {
   checked: boolean;
   onChange: (checked: boolean) => void;
+  tooltip?: {
+    label: string;
+    size?: 'sm' | 'md';
+    placement?: Placement;
+  };
+  reverse?: boolean;
   label?: string;
   name?: string;
-  theme?: 'blue' | 'evolved-green' | 'quartz' | 'green' | 'mushroom' | 'coral';
+  theme?: COHERE_BRANDED_COLORS;
   className?: string;
 };
 
@@ -18,14 +26,22 @@ export const Switch: React.FC<Props> = ({
   checked,
   onChange,
   label,
+  reverse = false,
+  tooltip,
   theme = 'evolved-green',
   name,
   className = '',
 }) => {
   return (
-    <div className="group flex items-center">
+    <div className="group flex w-10 items-center">
       <Field>
-        <div className={cn('flex items-center justify-end gap-x-6', className)}>
+        <div
+          className={cn(
+            'flex items-center justify-end gap-x-6',
+            { 'flex-row-reverse': reverse },
+            className
+          )}
+        >
           <HUSwitch
             name={name}
             checked={checked}
@@ -44,6 +60,11 @@ export const Switch: React.FC<Props> = ({
                 'bg-green-250 group-hover:bg-green-200': checked && theme === 'green',
                 'bg-mushroom-600 group-hover:bg-mushroom-500': checked && theme === 'mushroom',
                 'bg-coral-600 group-hover:bg-coral-500': checked && theme === 'coral',
+                'bg-evolved-blue-500 group-hover:bg-blue-400': checked && theme === 'evolved-blue',
+                'bg-evolved-mushroom-500 group-hover:bg-evolved-mushroom-600':
+                  checked && theme === 'evolved-mushroom',
+                'bg-evolved-quartz-500 group-hover:bg-evolved-quartz-700':
+                  checked && theme === 'evolved-quartz',
               }
             )}
           >
@@ -63,9 +84,22 @@ export const Switch: React.FC<Props> = ({
             />
           </HUSwitch>
           {label && (
-            <Label>
-              <Text className="dark:text-marble-950">{label}</Text>
-            </Label>
+            <span className="flex items-center gap-x-2">
+              <Label>
+                <Text styleAs="label" className="dark:text-marble-950">
+                  {label}
+                </Text>
+              </Label>
+              {tooltip && (
+                <Tooltip
+                  label={tooltip.label}
+                  size={tooltip.size ?? 'sm'}
+                  placement={tooltip.placement}
+                  hover
+                  hoverDelay={{ open: 250 }}
+                />
+              )}
+            </span>
           )}
         </div>
       </Field>

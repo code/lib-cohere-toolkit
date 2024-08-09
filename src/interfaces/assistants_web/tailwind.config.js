@@ -3,7 +3,14 @@ module.exports = {
   presets: [require('./src/themes/cohereTheme')],
   content: ['src/**/*.{js,jsx,ts,tsx}'],
   plugins: [require('@tailwindcss/typography')],
-  darkMode: 'selector',
+  darkMode: 'class',
+  safelist: [
+    {
+      pattern:
+        /(bg|text|border|fill)-(blue|evolved-blue|coral|green|evolved-green|quartz|evolved-quartz|mushroom|evolved-mushroom|marble|volcanic|danger)-\S+/,
+      variants: ['hover', 'dark', 'dark:hover'],
+    },
+  ],
   theme: {
     extend: {
       screens: {
@@ -15,17 +22,18 @@ module.exports = {
         'citation-panel-xl': '349px', // subtract 10px for scrollbar and 1px for border
         menu: '174px',
         'agents-panel-collapsed': '82px',
-        'agents-panel-expanded': '288px',
+        'agents-panel-expanded': '240px',
         'agents-panel-expanded-lg': '320px',
         'left-panel-lg': '242px',
         'left-panel-2xl': '300px',
         'left-panel-3xl': '360px',
       },
       width: {
-        'ep-icon-sm': '12px',
-        'ep-icon-md': '16px',
-        'ep-icon-lg': '24px',
-        'ep-icon-xl': '36px',
+        'icon-xs': '12px',
+        'icon-sm': '14px',
+        'icon-md': '16px',
+        'icon-lg': '24px',
+        'icon-xl': '36px',
         'btn-sm': '280px',
         'btn-md': '312px',
         'btn-lg': '350px',
@@ -44,7 +52,7 @@ module.exports = {
       maxWidth: {
         message: '976px',
         'agents-panel-collapsed': '82px',
-        'agents-panel-expanded': '288px',
+        'agents-panel-expanded': '240px',
         'agents-panel-expanded-lg': '320px',
         drawer: '288px',
         'drawer-lg': '360px',
@@ -55,10 +63,12 @@ module.exports = {
         'share-content-with-citations': '1500px',
       },
       height: {
-        'ep-icon-sm': '12px',
-        'ep-icon-md': '16px',
-        'ep-icon-lg': '24px',
-        'ep-icon-xl': '36px',
+        'cell-button': '40px',
+        'icon-xs': '12px',
+        'icon-sm': '14px',
+        'icon-md': '16px',
+        'icon-lg': '24px',
+        'icon-xl': '36px',
         header: '64px',
       },
       minHeight: {
@@ -85,8 +95,7 @@ module.exports = {
         'tag-suggestions': '10',
         'drag-drop-input-overlay': '10',
         'configuration-drawer': '20',
-        'selected-citation': '20',
-        'read-only-conversation-footer': '30',
+        'read-only-conversation-footer': '60',
         menu: '90',
         'guide-tooltip': '30',
         tooltip: '50',
@@ -101,7 +110,7 @@ module.exports = {
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            color: theme('colors.volcanic.100'),
+            color: theme('colors.volcanic.300'),
           },
         },
       }),
@@ -147,6 +156,9 @@ module.exports = {
             width: '0%',
           },
         },
+      },
+      transitionProperty: {
+        spacing: 'padding',
       },
       animation: {
         'typing-ellipsis': 'typing 2s steps(4) infinite',

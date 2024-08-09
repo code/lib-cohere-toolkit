@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 import cohere
@@ -10,14 +9,12 @@ from backend.model_deployments.base import BaseDeployment
 from backend.model_deployments.utils import get_model_config_var
 from backend.schemas.cohere_chat import CohereChatRequest
 from backend.schemas.context import Context
-from backend.services.logger import get_logger, send_log_message
+from backend.services.logger.utils import LoggerFactory
 from backend.services.metrics import collect_metrics_chat_stream, collect_metrics_rerank
 
 COHERE_API_KEY_ENV_VAR = "COHERE_API_KEY"
 COHERE_ENV_VARS = [COHERE_API_KEY_ENV_VAR]
 DEFAULT_RERANK_MODEL = "rerank-english-v2.0"
-
-logger = get_logger()
 
 
 class CohereDeployment(BaseDeployment):
@@ -39,6 +36,7 @@ class CohereDeployment(BaseDeployment):
 
     @classmethod
     def list_models(cls) -> List[str]:
+        logger = LoggerFactory().get_logger()
         if not CohereDeployment.is_available():
             return []
 
@@ -51,8 +49,8 @@ class CohereDeployment(BaseDeployment):
         response = requests.get(url, headers=headers)
 
         if not response.ok:
-            logging.warning(
-                f"[Cohere Deployment] Error retrieving models: Invalid HTTP {response.status} response"
+            logger.warning(
+                event=f"[Cohere Deployment] Error retrieving models: Invalid HTTP {response.status_code} response",
             )
             return []
 
@@ -79,19 +77,24 @@ class CohereDeployment(BaseDeployment):
     async def invoke_chat_stream(
         self, chat_request: CohereChatRequest, ctx: Context, **kwargs: Any
     ) -> Any:
+        logger = ctx.get_logger()
+
         stream = self.client.chat_stream(
             **chat_request.model_dump(exclude={"stream", "file_ids", "agent_id"}),
         )
 
         for event in stream:
-            send_log_message(
-                logger,
-                f"Chat event: {to_dict(event)}",
-                level="info",
-                conversation_id=kwargs.get("conversation_id"),
-                user_id=ctx.get_user_id(),
+            event_dict = to_dict(event)
+
+            event_dict_log = event_dict.copy()
+            event_dict_log.pop("conversation_id", None)
+            logger.debug(
+                event=f"Chat event",
+                **event_dict_log,
+                conversation_id=ctx.get_conversation_id(),
             )
-            yield to_dict(event)
+
+            yield event_dict
 
     @collect_metrics_rerank
     async def invoke_rerank(

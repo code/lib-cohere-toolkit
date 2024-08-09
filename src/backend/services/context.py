@@ -4,7 +4,6 @@ from fastapi import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from backend.schemas.context import Context
-from backend.services.auth.utils import get_header_user_id
 
 
 class ContextMiddleware:
@@ -12,6 +11,10 @@ class ContextMiddleware:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        # Import here to avoid circular imports
+        from backend.schemas.user import DEFAULT_USER_ID
+        from backend.services.auth.utils import get_header_user_id, has_header_user_id
+
         trace_id = str(uuid.uuid4())
 
         if scope["type"] != "http":
@@ -28,12 +31,17 @@ class ContextMiddleware:
         request = Request(scope)
         context.with_deployment_name(request.headers.get("Deployment-Name", ""))
 
-        request = Request(scope)
-        user_id = get_header_user_id(request)
+        if has_header_user_id(request):
+            user_id = get_header_user_id(request)
+        else:
+            user_id = DEFAULT_USER_ID
+
         context.with_user_id(user_id)
 
         agent_id = request.headers.get("Agent-Id")
         context.with_agent_id(agent_id)
+
+        context.with_logger()
 
         # Set the context on the scope
         scope["context"] = context
